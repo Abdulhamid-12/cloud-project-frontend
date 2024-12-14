@@ -1,13 +1,24 @@
-# build stage
-FROM node:lts-alpine AS build-stage
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+# src: https://dev.to/enkaypeter/how-to-deploy-a-vue-application-on-cloud-run-3efl
+FROM nginx:alpine
 
-# production stage
-FROM nginx:stable-alpine AS production-stage
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+# Install npm and node
+RUN apk add --update npm
+
+# Add bash
+RUN apk add --no-cache bash
+
+WORKDIR /app
+
+COPY package.json ./
+
+RUN npm install
+
+COPY . .
+
+# # Make our shell script executable
+RUN chmod +x start.sh
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
+
+CMD ["/bin/bash", "-c", "/app/start.sh && nginx -g 'daemon off;'"]
