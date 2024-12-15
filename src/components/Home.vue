@@ -1,17 +1,12 @@
 <template>
   <v-container class="fill-height">
-    <v-responsive
-      class="align-centerfill-height mx-auto"
-      max-width="900"
-    >
-      <v-img
-        class="mb-4"
-        height="150"
-        src="@/assets/logo.png"
-      />
+    <v-responsive class="align-centerfill-height mx-auto" max-width="900">
+      <v-img class="mb-4" height="150" src="@/assets/logo.png" />
 
       <div class="text-center">
-        <div class="text-body-2 font-weight-light mb-n1">COE 558: Cloud & Edge Computing</div>
+        <div class="text-body-2 font-weight-light mb-n1">
+          COE 558: Cloud & Edge Computing
+        </div>
 
         <h1 class="text-h2 font-weight-bold">Cource Project</h1>
       </div>
@@ -19,99 +14,27 @@
       <div class="py-4" />
 
       <v-row>
-        <v-col cols="6">
+        <v-col cols="12">
           <v-card
-            append-icon="mdi-open-in-new"
             class="py-4"
             color="surface-variant"
-            href="https://vuetifyjs.com/"
-            prepend-icon="mdi-text-box-outline"
-            rel="noopener noreferrer"
+            prepend-icon="mdi-weather-cloudy"
             rounded="lg"
-            subtitle="Learn about all things Vuetify in our documentation."
-            target="_blank"
-            title="Documentation"
-            variant="text"
+            title="Weather"
+            :loading="loadingWeather"
           >
-            <v-overlay
-              opacity=".06"
-              scrim="primary"
-              contained
-              model-value
-              persistent
-            />
-          </v-card>
-        </v-col>
-
-        <v-col cols="6">
-          <v-card
-            append-icon="mdi-open-in-new"
-            class="py-4"
-            color="surface-variant"
-            href="https://vuetifyjs.com/introduction/why-vuetify/#feature-guides"
-            prepend-icon="mdi-star-circle-outline"
-            rel="noopener noreferrer"
-            rounded="lg"
-            subtitle="Explore available framework Features."
-            target="_blank"
-            title="Features"
-            variant="text"
-          >
-            <v-overlay
-              opacity=".06"
-              scrim="primary"
-              contained
-              model-value
-              persistent
-            />
-          </v-card>
-        </v-col>
-
-        <v-col cols="6">
-          <v-card
-            append-icon="mdi-open-in-new"
-            class="py-4"
-            color="surface-variant"
-            href="https://vuetifyjs.com/components/all"
-            prepend-icon="mdi-widgets-outline"
-            rel="noopener noreferrer"
-            rounded="lg"
-            subtitle="Discover components in the API Explorer."
-            target="_blank"
-            title="Components"
-            variant="text"
-          >
-            <v-overlay
-              opacity=".06"
-              scrim="primary"
-              contained
-              model-value
-              persistent
-            />
-          </v-card>
-        </v-col>
-
-        <v-col cols="6">
-          <v-card
-            append-icon="mdi-open-in-new"
-            class="py-4"
-            color="surface-variant"
-            href="https://discord.vuetifyjs.com"
-            prepend-icon="mdi-account-group-outline"
-            rel="noopener noreferrer"
-            rounded="lg"
-            subtitle="Connect with Vuetify developers."
-            target="_blank"
-            title="Community"
-            variant="text"
-          >
-            <v-overlay
-              opacity=".06"
-              scrim="primary"
-              contained
-              model-value
-              persistent
-            />
+            <v-card-text v-if="!loadingWeather">
+              <v-img :src="weatherIcon" width="50"></v-img>
+              <h1>Data:</h1>
+              <p>{{ weather }}</p>
+              <v-btn
+                @click="getWeatherForCurrentUser"
+                :loading="loadingBtn"
+                class="mt-5"
+                prepend-icon="mdi-map-marker"
+                >my location</v-btn
+              >
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -120,5 +43,60 @@
 </template>
 
 <script setup lang="ts">
-  //
+import axios from "axios";
+
+const BASE_URL =
+  "https://us-central1-kfupm-241-coe558-alsaleh.cloudfunctions.net";
+
+const weather = ref<any>();
+const weatherIcon = ref("");
+const loadingWeather = ref(false);
+const loadingBtn = ref(false);
+
+const getWeather = async (location = '') => {
+  const response = await axios.get(`${BASE_URL}/weather/?location=${location}`);
+  weather.value = response.data;
+  weatherIcon.value = response.data.current.condition.icon;
+  // console.log(weather.value);
+};
+
+const getUserLocation = async () => {
+  return new Promise((resolve, reject) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve(`${position.coords.latitude},${position.coords.longitude}`);
+        },
+        (error) => {
+          reject(error);
+        }
+      );
+    } else {
+      reject(new Error("Geolocation is not supported by this browser."));
+    }
+  });
+};
+
+const getWeatherForCurrentUser = async () => {
+  try {
+    loadingBtn.value = true;
+    const location: any = await getUserLocation();
+    loadingBtn.value = false;
+
+    loadingWeather.value = true;
+    await getWeather(location);
+    loadingWeather.value = false;
+    
+  } catch (error) {
+    loadingBtn.value = false;
+    loadingWeather.value = false;
+    alert(error);
+  }
+};
+
+onMounted(async () => {
+  loadingWeather.value = true;
+  await getWeather();
+  loadingWeather.value = false;
+});
 </script>
