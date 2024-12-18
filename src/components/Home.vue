@@ -188,17 +188,16 @@ const getUserLocation = async () => {
 const getWeatherForCurrentUser = async () => {
   try {
     loadingBtn.value = true;
-    const location: any = await getUserLocation();
-    loadingBtn.value = false;
-
     loadingWeather.value = true;
+    const location: any = await getUserLocation();
     await getWeather(location);
-    loadingWeather.value = false;
     
   } catch (error) {
+    alert(error);
+  }
+  finally {
     loadingBtn.value = false;
     loadingWeather.value = false;
-    alert(error);
   }
 };
 

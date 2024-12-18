@@ -15,7 +15,7 @@
     <div>
       <v-spacer></v-spacer>
       <v-btn
-        variant="outlined"
+        variant="tonal"
         class="mr-3 text-none"
         prepend-icon="mdi-weather-cloudy"
         density="comfortable"
@@ -23,12 +23,20 @@
         >Weather</v-btn
       >
       <v-btn
-        variant="outlined"
+        variant="tonal"
         class="mr-3 text-none"
         prepend-icon="mdi-creation-outline"
         density="comfortable"
         @click="goToGenAI"
         >Gen-AI</v-btn
+      >
+      <v-btn
+        variant="tonal"
+        class="mr-3 text-none"
+        prepend-icon="mdi-clipboard-text-clock-outline"
+        density="comfortable"
+        @click="goToHistory"
+        >History</v-btn
       >
     </div>
   </v-app-bar>
@@ -42,5 +50,9 @@ const goToGenAI = () => {
 
 const goToWeather = () => {
   router.push("/");
+};
+
+const goToHistory = () => {
+  router.push("/history");
 };
 </script>
