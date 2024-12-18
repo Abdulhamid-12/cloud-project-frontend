@@ -1,28 +1,18 @@
 <template>
-  <v-container class="fill-height" fluid>
-    <v-responsive class="align-centerfill-height mx-auto" max-width="900">
-      <v-img class="mb-4" height="150" src="@/assets/logo.png" />
-
-      <div class="text-center">
-        <h1 class="font-weight-bold">COE 558: Cloud & Edge Computing</h1>
-      </div>
-
-      <div class="py-4" />
-
-      <v-row>
-        <v-col cols="12">
+  <v-container class="fill-height align-center justify-center">
           <v-card
             class="py-4"
             color="blue-lighten-5"
             prepend-icon="mdi-weather-cloudy"
             rounded="lg"
             title="Weather"
+            max-width="700"
             :loading="loadingWeather"
           >
             <v-card-text>
               <h3>{{ weather.location.name }}, {{ weather.location.region }}, {{ weather.location.country }}</h3>
               <div class="d-flex align-center">
-                <img :src="weather.current.condition.icon" alt="Weather Icon" style="width: 50px; height: auto;"></img>
+                <img :src="weather.current.condition.icon" alt="icon" style="width: 50px; height: auto;"></img>
                 <h1>{{ displayedTemperature }}</h1> 
               </div>
               <v-row>
@@ -85,13 +75,10 @@
                 :append-icon="temperatureUnit === 'C' ? 'mdi-temperature-fahrenheit' : 'mdi-temperature-celsius'"
                 rounded
                 color="primary"
-                >Change unit to</v-btn
+                >Change to</v-btn
               >
             </v-card-text>
           </v-card>
-        </v-col>
-      </v-row>
-    </v-responsive>
   </v-container>
 </template>
 
@@ -177,10 +164,8 @@ const loadingWeather = ref(false);
 const loadingBtn = ref(false);
 
 const getWeather = async (location = '') => {
-  console.log(location);
   const response = await axios.get(`${BASE_URL}/weather/?location=${location}`);
   weather.value = response.data;
-  // console.log(weather.value);
 };
 
 const getUserLocation = async () => {
