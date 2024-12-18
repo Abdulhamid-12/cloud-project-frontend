@@ -6,32 +6,34 @@
             prepend-icon="mdi-weather-cloudy"
             rounded="lg"
             title="Weather"
-            max-width="700"
+            max-width="1000"
             :loading="loadingWeather"
           >
-            <v-card-text>
+          <v-row>
+            <v-col cols="6">
+              <v-card-text>
               <h3>{{ weather.location.name }}, {{ weather.location.region }}, {{ weather.location.country }}</h3>
-              <div class="d-flex align-center">
+              <div class="d-flex align-center mt-2">
                 <img :src="weather.current.condition.icon" alt="icon" style="width: 50px; height: auto;"></img>
                 <h1>{{ displayedTemperature }}</h1> 
               </div>
               <v-row>
                 <v-col cols="6">
-                  <v-card title="UV index" class="mt-5" prepend-icon="mdi-weather-sunny" rounded="lg">
+                  <v-card title="UV index" class="mt-3" prepend-icon="mdi-weather-sunny" rounded="lg">
                     <v-card-text>
                       {{ weather.current.uv }}
                     </v-card-text>
                   </v-card>
                 </v-col>
                 <v-col cols="6">
-                  <v-card title="Humidity" class="mt-5" prepend-icon="mdi-water-percent" rounded="lg">
+                  <v-card title="Humidity" class="mt-3" prepend-icon="mdi-water-percent" rounded="lg">
                     <v-card-text>
                       {{ weather.current.humidity }}
                     </v-card-text>
                   </v-card>
                 </v-col>
                 <v-col cols="6">
-                  <v-card title="Wind" class="mt-5" prepend-icon="mdi-weather-windy" rounded="lg">
+                  <v-card title="Wind" class="mt-3" prepend-icon="mdi-weather-windy" rounded="lg">
                     <v-card-text>
                       <v-icon>{{ windDirection }}</v-icon>
                       {{ weather.current.wind_kph }} km/h
@@ -39,54 +41,82 @@
                   </v-card>
                 </v-col>
                 <v-col cols="6">
-                  <v-card title="Dew point" class="mt-5" prepend-icon="mdi-thermometer-water" rounded="lg">
+                  <v-card title="Dew point" class="mt-3" prepend-icon="mdi-thermometer-water" rounded="lg">
                     <v-card-text>
                       {{ weather.current.dewpoint_c }} &deg;C
                     </v-card-text>
                   </v-card>
                 </v-col>
                 <v-col cols="6">
-                  <v-card title="Pressure" class="mt-5" prepend-icon="mdi-format-vertical-align-center" rounded="lg">
+                  <v-card title="Pressure" class="mt-3" prepend-icon="mdi-format-vertical-align-center" rounded="lg">
                     <v-card-text>
                       {{ weather.current.pressure_mb }} mb
                     </v-card-text>
                   </v-card>
                 </v-col>
                 <v-col cols="6">
-                  <v-card title="Visibility" class="mt-5" prepend-icon="mdi-eye" rounded="lg">
+                  <v-card title="Visibility" class="mt-3" prepend-icon="mdi-eye" rounded="lg">
                     <v-card-text>
                       {{ weather.current.vis_km }} km
                     </v-card-text>
                   </v-card>
                 </v-col>
               </v-row>
-              <v-btn
-                @click="getWeatherForCurrentUser"
-                :loading="loadingBtn"
-                class="mt-5 text-none"
-                prepend-icon="mdi-map-marker"
-                rounded
-                color="primary"
-                >My location</v-btn
-              >
-              <v-btn
-                @click="toggleTemperatureUnit"
-                class="mt-5 ml-3 text-none"
-                :append-icon="temperatureUnit === 'C' ? 'mdi-temperature-fahrenheit' : 'mdi-temperature-celsius'"
-                rounded
-                color="primary"
-                >Change to</v-btn
-              >
             </v-card-text>
-          </v-card>
+          </v-col>
+          <v-col cols="6">
+            <div ref="mapContainer" style="width: 450px; height: 500px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            <v-btn class="text-none mb-1 mt-2" append-icon="mdi-map-marker" color="primary" rounded variant="outlined" style="position: absolute ; top: 80px; right: 50px; z-index: 1000;" @click="moveToMarker">View Marker</v-btn>
+          </v-col>
+        </v-row>
+        <v-card-actions>
+          <v-btn
+            @click="getWeatherForCurrentUser"
+            :loading="loadingBtn"
+            class="ml-3 text-none"
+            prepend-icon="mdi-human-greeting-variant"
+            rounded
+            color="primary"
+            variant="tonal"
+            >My location</v-btn
+          >
+          <v-btn
+            @click="getMarkerLocation"
+            :loading="loadingBtn"
+            class="ml-3 text-none"
+            prepend-icon="mdi-map-marker"
+            rounded
+            color="primary"
+            variant="tonal"
+            >Marker location</v-btn
+          >
+          <v-btn
+            @click="toggleTemperatureUnit"
+            class="ml-3 text-none"
+            :append-icon="temperatureUnit === 'C' ? 'mdi-temperature-fahrenheit' : 'mdi-temperature-celsius'"
+            rounded
+            color="primary"
+            variant="tonal"
+            >Change to</v-btn
+          >
+        </v-card-actions>
+      </v-card>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import axios from "axios";
+import L from "leaflet";
 
 const BASE_URL = "https://us-central1-kfupm-241-coe558-alsaleh.cloudfunctions.net";
 
+const map = ref(null);
+const mapContainer = ref(null);
+const marker = ref(null);
+// default location is Riyadh
+const lat = ref(24.7743);
+const lng = ref(46.7386);
 const weather = ref({
     "location": {
         "name": "",
@@ -173,6 +203,10 @@ const getUserLocation = async () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          lat.value = position.coords.latitude;
+          lng.value = position.coords.longitude;
+          map.value.setView([lat.value, lng.value], 10);
+          marker.value.setLatLng([lat.value, lng.value]);
           resolve(`${position.coords.latitude},${position.coords.longitude}`);
         },
         (error) => {
@@ -201,10 +235,40 @@ const getWeatherForCurrentUser = async () => {
   }
 };
 
+const getMarkerLocation = async () => {
+  loadingWeather.value = true;
+  const location = `${marker.value._latlng.lat},${marker.value._latlng.lng}`;
+  try {
+    await getWeather(location);
+  } catch (error) {
+    alert(error);
+  }
+  finally {
+    loadingWeather.value = false;
+  }
+};
+
+const moveToMarker = () => {
+  map.value.setView([marker.value._latlng.lat, marker.value._latlng.lng], 13);
+};
+
 onMounted(async () => {
   loadingWeather.value = true;
   await getWeather();
   loadingWeather.value = false;
+
+  map.value = L.map(mapContainer.value).setView([lat.value, lng.value, ], 10);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map.value);
+
+  marker.value = L.marker([lat.value, lng.value], { draggable: true }).addTo(map.value);
+  marker.value.on("dragend", (event) => {
+    lat.value = event.target._latlng.lat;
+    lng.value = event.target._latlng.lng;
+  });
+
 });
 
 const toggleTemperatureUnit = () => { 
