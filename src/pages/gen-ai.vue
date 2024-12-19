@@ -9,6 +9,8 @@
         rows="3"
         auto-grow
         prepend-inner-icon="mdi-pencil"
+        :loading="loading"
+        :disabled="loading"
       ></v-textarea>
       <v-btn
         type="submit"
@@ -24,6 +26,8 @@
     <v-img
       class="mx-auto"
       max-width="700"
+      height="500"
+      elevation="5"
       :src="generatedImage"
     >
     </v-img>
@@ -32,8 +36,10 @@
 
 <script lang="ts" setup>
 import axios from "axios";
+import { useAppStore } from "@/stores/app";
 
 const url = "https://us-central1-kfupm-241-coe558-alsaleh.cloudfunctions.net/GenAI-1";
+const { showSnackbar } = useAppStore();
 const generatedImage = ref("");
 const description = ref("");
 const loading = ref(false);
@@ -50,7 +56,9 @@ const onGenerate = async () => {
     loading.value = true;
     const response: any = await axios.post(url, { "prompt": description.value });
     generatedImage.value = response.data.imageURL;
+    showSnackbar("success", "Image generated successfully");
   } catch (error) {
+    showSnackbar("error", "Error generating image");
     console.error("Error generating image:", error);
   } finally {
     loading.value = false;

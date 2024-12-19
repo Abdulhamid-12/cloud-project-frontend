@@ -3,6 +3,7 @@
     <AppBar />
     <v-main>
       <router-view />
+      <Snackbar />
     </v-main>
 
     <AppFooter />
