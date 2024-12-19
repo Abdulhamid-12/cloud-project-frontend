@@ -128,7 +128,8 @@ const onSave = async (id: string) => {
       image.prompt = newPrompt.value;
       image.isEditing = false;
       const response: any = await axios.put(`${url}/${id}`, { prompt: newPrompt.value });
-      console.log(response.data);
+      image.imageURL = response.data.imageURL;
+      console.log("Edit res:", response.data);
       showSnackbar("success", "Image updated successfully");
     } catch (error) {
       image.prompt = oldPrompt;
