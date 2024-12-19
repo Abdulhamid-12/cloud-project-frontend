@@ -1,8 +1,7 @@
 <template>
   <v-container class="fill-height align-center justify-center">
           <v-card
-            class="py-4"
-            color="blue-lighten-5"
+            class="py-4 main-card"
             prepend-icon="mdi-weather-cloudy"
             rounded="lg"
             title="Weather"
@@ -12,11 +11,13 @@
           <v-row>
             <v-col cols="6">
               <v-card-text>
-              <h3>{{ weather.location.name }}, {{ weather.location.region }}, {{ weather.location.country }}</h3>
-              <div class="d-flex align-center mt-2">
+                <div class="d-flex align-center">
+                  <v-icon>mdi-map-marker</v-icon>
+                <h3>{{ weather.location.name }}, {{ weather.location.region }}, {{ weather.location.country }}</h3>
                 <img :src="weather.current.condition.icon" alt="icon" style="width: 50px; height: auto;"></img>
-                <h1>{{ displayedTemperature }}</h1> 
               </div>
+              <h1>{{ displayedTemperature }} </h1>
+              <h3> {{ weather.current.condition.text}}</h3>
               <v-row>
                 <v-col cols="6">
                   <v-card title="UV index" class="mt-3" prepend-icon="mdi-weather-sunny" rounded="lg">
@@ -28,7 +29,7 @@
                 <v-col cols="6">
                   <v-card title="Humidity" class="mt-3" prepend-icon="mdi-water-percent" rounded="lg">
                     <v-card-text>
-                      {{ weather.current.humidity }}
+                      {{ weather.current.humidity }}%
                     </v-card-text>
                   </v-card>
                 </v-col>
@@ -108,12 +109,13 @@
 <script setup lang="ts">
 import axios from "axios";
 import L from "leaflet";
+import { Marker, Map } from "leaflet";
 
 const BASE_URL = "https://us-central1-kfupm-241-coe558-alsaleh.cloudfunctions.net";
 
-const map = ref(null);
+const map = ref<Map>(null);
 const mapContainer = ref(null);
-const marker = ref(null);
+const marker = ref<Marker>(null);
 // default location is Riyadh
 const lat = ref(24.7743);
 const lng = ref(46.7386);
@@ -207,7 +209,7 @@ const getUserLocation = async () => {
           lat.value = position.coords.latitude;
           lng.value = position.coords.longitude;
           map.value.setView([lat.value, lng.value], 10);
-          marker.value.setLatLng([lat.value, lng.value]);
+          marker.value!.setLatLng([lat.value, lng.value]);
           resolve(`${position.coords.latitude},${position.coords.longitude}`);
         },
         (error) => {
@@ -225,6 +227,7 @@ const getWeatherForCurrentUser = async () => {
     loadingBtn.value = true;
     loadingWeather.value = true;
     const location: any = await getUserLocation();
+    console.log(location);
     await getWeather(location);
     
   } catch (error) {
@@ -252,7 +255,7 @@ const getMarkerLocation = async () => {
 };
 
 const moveToMarker = () => {
-  map.value.setView([marker.value._latlng.lat, marker.value._latlng.lng], 13);
+  map.value!.setView([marker.value._latlng.lat, marker.value._latlng.lng], 13);
 };
 
 onMounted(async () => {
@@ -266,7 +269,7 @@ onMounted(async () => {
   }).addTo(map.value);
 
   marker.value = L.marker([lat.value, lng.value], { draggable: true }).addTo(map.value);
-  marker.value.on("dragend", (event) => {
+  marker.value.on("dragend", (event: any) => {
     lat.value = event.target._latlng.lat;
     lng.value = event.target._latlng.lng;
   });
@@ -282,3 +285,8 @@ const displayedTemperature = computed(() => {
 });
 
 </script>
+<style scoped>
+  .main-card {
+    background: linear-gradient(73deg, rgb(158, 255, 255) 0%, rgba(97, 150, 255, 0.75) 100%);
+  }
+</style>

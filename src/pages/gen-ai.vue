@@ -33,7 +33,7 @@
 <script lang="ts" setup>
 import axios from "axios";
 
-const url = "";
+const url = "https://us-central1-kfupm-241-coe558-alsaleh.cloudfunctions.net/GenAI-1";
 const generatedImage = ref("");
 const description = ref("");
 const loading = ref(false);
@@ -48,8 +48,8 @@ const textRules = [
 const onGenerate = async () => {
   try {
     loading.value = true;
-    const response = await axios.get(url);
-    generatedImage.value = response.data;
+    const response: any = await axios.post(url, { "prompt": description.value });
+    generatedImage.value = response.data.imageURL;
   } catch (error) {
     console.error("Error generating image:", error);
   } finally {
