@@ -13,7 +13,7 @@
           <v-img
             :src="image.imageURL"
             lazy-src="https://placehold.co/600x400?text=Image+Expired"
-            height="200px"
+            height="300px"
             alt="Generated image"
             cover
             >
