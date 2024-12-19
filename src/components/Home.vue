@@ -83,7 +83,7 @@
           >
           <v-btn
             @click="getMarkerLocation"
-            :loading="loadingBtn"
+            :loading="loadingBtn2"
             class="ml-3 text-none"
             prepend-icon="mdi-map-marker"
             rounded
@@ -192,6 +192,7 @@ const windDirection = computed(() => {
 const temperatureUnit = ref('C');
 const loadingWeather = ref(false);
 const loadingBtn = ref(false);
+const loadingBtn2 = ref(false);
 
 const getWeather = async (location = '') => {
   const response = await axios.get(`${BASE_URL}/weather/?location=${location}`);
@@ -237,6 +238,7 @@ const getWeatherForCurrentUser = async () => {
 
 const getMarkerLocation = async () => {
   loadingWeather.value = true;
+  loadingBtn2.value = true;
   const location = `${marker.value._latlng.lat},${marker.value._latlng.lng}`;
   try {
     await getWeather(location);
@@ -245,6 +247,7 @@ const getMarkerLocation = async () => {
   }
   finally {
     loadingWeather.value = false;
+    loadingBtn2.value = false;
   }
 };
 
